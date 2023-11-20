@@ -1,0 +1,121 @@
+
+import requests
+url_1 = "https://lavryniuk7.tback.zendo.cloud"
+url_register = "/api/v1/register"
+url_auf = "/api/v1/login"
+url_acc = "/api/v1/user/finance/accounts"
+url_money = "/api/v1/admin/finance/operations/user-transfer"
+
+url_shop = "/api/v1/shop/carts"
+
+admin_login ="admin"
+#inviter = "w3000"
+password = "123456"
+headers =  register_headers = {
+            'Content-Type': 'application/json;charset=UTF-8',
+            'Accept': 'application/json, text/plain, /'
+        }
+
+login = "w200"
+product_id = "2"  # массажер id=1
+quantity = "1"
+
+
+class Massager:
+    def massager(self):
+
+        body_1 = {
+
+            "login": login,
+            "password": password
+            }
+
+        print("Шаг 2.  Авторизация клиентом")
+        print("____________________________________________________________________________________________")
+        post_1 = requests.post(url=url_1+url_auf, headers=register_headers, json=body_1)
+        #print(post_1.json())
+        assert 200 == post_1.status_code
+
+        if post_1.status_code == 200:
+            print("статус код =", post_1.status_code)
+            print("------------")
+        else:
+            print("case is not working")
+        token_1 = post_1.json()['data']['token']
+        register_headers_2 = \
+            {
+                'Authorization': f'Bearer {token_1}',
+                'Content-Type': 'application/json;charset=UTF-8',
+                'Accept': 'application/json, text/plain, /'
+            }
+
+        print("Узнаем аккаунт пользователя")
+        get_1 = requests.get(url=url_1 + url_acc, headers=register_headers_2)
+        assert 200 == post_1.status_code
+        if get_1.status_code == 200:
+            get_1 = get_1.json()
+        account_main = None
+        for account in get_1['data']:
+            if account['name'] == "Основной счет USD":
+                account_main = account['id']  # account_ustd_main  это переменная которую система использует как номер счета
+                break
+        print("Аккаунт для пополнения основного счета = id ", account_main)
+        print("--------------------------")
+
+        print("Шаг 3. Покупка товара.")
+        print("id", account_main)
+        print(" ")
+        print("Создаем карзину")
+        print(" _______________________")
+        post_11 = requests.post(url=url_1+ url_shop, headers=register_headers_2)  # запрос по карзине
+        #print(post_11.json())
+        print("Статус код:", str(post_1.status_code))
+        print("корзина id = ", str(post_11.json()['data']['id']))  # берем id карзины
+
+        # часть вторая
+        # из полученых джейсонн данных достаем id карзины и вставляем в запрос для добавления продукта. олл и id продукта в переменной выше
+        item = post_11.json()['data']['id']
+        body_1 = {
+            "product_id": product_id,
+            "quantity": quantity
+        }
+
+        url_add_item = url_1 + "/api/v1/shop/carts/{}/add-product"
+        updated_url = url_add_item.format(item)
+
+        post_2 = requests.post(url=updated_url, headers=register_headers_2, json=body_1)  # запрос на добовление продукта
+        print("Товар в корзину добавлен,Статус код:", str(post_2.status_code))
+
+        body_2 = {
+            "finance_account_id": account_main,  # ПЕРЕМЕННАЯ ВЫШЕ
+            #"payment_currency_id": "1",
+            "recipient_type": "me",
+            "payment_type": "account",
+            "delivery_country_id": "3572887",
+            "delivery_state_id": "3572807",
+            "delivery_city_id": "3572772",
+            "police_agree": "1",
+            "newuser_agree": "1",
+            "country_id": "690791",
+            "delivery_postcode": "55555",
+            "delivery_house": "kknmkl",
+            "delivery_street": "kmkmkmd",
+            "region_id": "700567",
+            "city_id": "700569",
+            "do_not_call_back": "1",
+            "delivery_type": "DHL"
+        }
+        url_сheckout = url_1 + "/api/v1/shop/carts/{}/checkout"
+        updated_url_2 = url_сheckout.format(item)
+        post_3 = requests.post(url=updated_url_2, headers=register_headers_2, json=body_2)
+        print(post_3.json())
+        print("покупка успешна, статус код:", str(post_3.status_code))
+        print("Вот результат JSON", str(post_3.json()))  # если интересно что приходит в ответе то раскоментируй print/
+        print("--------------------------")
+
+
+
+
+# Использование класса UserGenerator для создания 10 пользователей
+a = Massager()
+a.massager()
