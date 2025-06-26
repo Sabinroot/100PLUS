@@ -1,13 +1,14 @@
 import time
 import requests
-url_1 = "https://lavryniuk7.tback.zendo.cloud"
+url_1 = "https://krivchenkov6.tback.zendo.cloud"
 url_register = "/api/v1/register"
 url_auf = "/api/v1/login"
 url_acc = "/api/v1/user/finance/accounts"
 url_money = "/api/v1/admin/finance/operations/user-transfer"
 
 admin_login ="admin"
-inviter = "w3000"
+admin_password = "123456"
+inviter = "t10064"
 password = "123456"
 headers =  register_headers = {
             'Content-Type': 'application/json;charset=UTF-8',
@@ -17,7 +18,7 @@ headers =  register_headers = {
 # Шаг 1. Создаем пользователя.
 class UserGenerator:  # Гениратор пользователей. Нужно настраивать
     def generate_login(self, index):
-        return "w30001w" + str(1 + index) #настрой окончание  логина
+        return "t10064tt" + str(1 + index) #настрой окончание  логина
 
     def generate_users(self, count):
         for i in range(count):
@@ -32,8 +33,14 @@ class UserGenerator:  # Гениратор пользователей. Нужн�
             'password_confirmation':"123456",
             "email": login + "@gmail.com",
             "agreement": "true",
-            "has_sponsor": 1
+            "country id":"690791",
+            "has_sponsor": 1,
+            "last_name": "Бонд",
+            "first_name":"Джеймс",
+            'phone':"+380636038450",
+            "country_id":"690791"
         }
+        
         print("шаг 1 Создание пользователя")
         post_registr = requests.post(url=url_1+url_register, headers=register_headers, json=data)
         if post_registr.status_code == 201:
@@ -54,7 +61,9 @@ class UserGenerator:  # Гениратор пользователей. Нужн�
         print("Шаг 2.  Авторизация клиентом")
         print("____________________________________________________________________________________________")
         post_1 = requests.post(url=url_1+url_auf, headers=register_headers, json=body_1)
-        assert 200 == post_1.status_code
+        print(post_1.status_code)
+        print(post_1.json())
+
         if post_1.status_code == 200:
             print("статус код =", post_1.status_code)
             print("------------")
@@ -89,7 +98,7 @@ class UserGenerator:  # Гениратор пользователей. Нужн�
         body_admin = {
 
             "login": admin_login,
-            "password": password
+            "password": admin_password
         }
         post_admin = requests.post(url=url_1+url_auf, headers=auf_hed_admin, json=body_admin)
         print(post_admin.status_code)
@@ -112,7 +121,7 @@ class UserGenerator:  # Гениратор пользователей. Нужн�
         }
         post_money = requests.post(url=url_1+url_money, headers=register_admin, json=post_body)
         print(post_money.json())
-        assert 202 == post_money.status_code
+
         if post_money.status_code == 202:
             print("Статус код", post_money.status_code)
             print("Баблишко на счету")
@@ -124,4 +133,4 @@ class UserGenerator:  # Гениратор пользователей. Нужн�
 
 # Использование класса UserGenerator для создания 10 пользователей
 generator = UserGenerator()
-generator.generate_users(1)
+generator.generate_users(20)
