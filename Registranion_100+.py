@@ -1,70 +1,45 @@
-import time
+
 import requests
-url_1 = "https://krivchenkov6.tback.zendo.cloud"
+url_1 = "https://krivchenkov6.tback.zendo.cloud" #  https://ustinov3.tback.zendo.cloud   https://krivchenkov6.tback.zendo.cloud
 url_register = "/api/v1/register"
 url_auf = "/api/v1/login"
 url_acc = "/api/v1/user/finance/accounts"
 url_money = "/api/v1/admin/finance/operations/user-transfer"
 
+url_shop = "/api/v1/shop/carts"
+
 admin_login ="admin"
 admin_password = "123456"
-inviter = "t10064"
+#inviter = "w3000"
 password = "123456"
 headers =  register_headers = {
             'Content-Type': 'application/json;charset=UTF-8',
             'Accept': 'application/json, text/plain, /'
         }
 
-# Шаг 1. Создаем пользователя.
-class UserGenerator:  # Гениратор пользователей. Нужно настраивать
-    def generate_login(self, index):
-        return "t10064tt" + str(1 + index) #настрой окончание  логина
+login = "t1003"
+product_id = "44"  # массажер id=27,9,28
+quantity = "3"
 
-    def generate_users(self, count):
-        for i in range(count):
-            login = self.generate_login(i)
-            self.create_user(login)
 
-    def create_user(self, login):
-        data = {
-            "password": password,
-            "username": login,
-            "sponsor_username": inviter,
-            'password_confirmation':"123456",
-            "email": login + "@gmail.com",
-            "agreement": "true",
-            "country id":"690791",
-            "has_sponsor": 1,
-            "last_name": "Бонд",
-            "first_name":"Джеймс",
-            'phone':"+380636038450",
-            "country_id":"690791"
-        }
-        
-        print("шаг 1 Создание пользователя")
-        post_registr = requests.post(url=url_1+url_register, headers=register_headers, json=data)
-        if post_registr.status_code == 201:
-            print(post_registr.status_code)
-            print(f"User--- {login} ---created successfully")
-        else:
-            print(f"Failed to create user {login}")
-            print(post_registr.status_code)
-            print(post_registr.json())
+class Massager:
+    def massager(self):
 
-# автооризация созданым юзером, узнаем id основного кошелька.
         body_1 = {
 
             "login": login,
             "password": password
-        }
+            }
 
         print("Шаг 2.  Авторизация клиентом")
         print("____________________________________________________________________________________________")
         post_1 = requests.post(url=url_1+url_auf, headers=register_headers, json=body_1)
-        print(post_1.status_code)
         print(post_1.json())
+        print(post_1.json())
+        #assert 200 == post_1.status_code
 
         if post_1.status_code == 200:
+            print(post_1.json())
             print("статус код =", post_1.status_code)
             print("------------")
         else:
@@ -76,61 +51,79 @@ class UserGenerator:  # Гениратор пользователей. Нужн�
                 'Content-Type': 'application/json;charset=UTF-8',
                 'Accept': 'application/json, text/plain, /'
             }
+
         print("Узнаем аккаунт пользователя")
-        get_1 = requests.get(url=url_1+url_acc, headers=register_headers_2)
+        get_1 = requests.get(url=url_1 + url_acc, headers=register_headers_2)
+        print(get_1.json())
         assert 200 == post_1.status_code
         if get_1.status_code == 200:
             get_1 = get_1.json()
         account_main = None
         for account in get_1['data']:
-            if account['name'] == "Основной счет USD":
+            if account['purpose'] == "main":
                 account_main = account['id']  # account_ustd_main  это переменная которую система использует как номер счета
                 break
         print("Аккаунт для пополнения основного счета = id ", account_main)
         print("--------------------------")
-        print("Теперь админом кидаем деньги на основной счет пользователю")
-        print("Авторизация админом")
 
-        auf_hed_admin = {
-            'Content-Type': 'application/json;charset=UTF-8',
-            'Accept': 'application/json, text/plain, /'
-        }
-        body_admin = {
+        print("Шаг 3. Покупка товара.")
+        print("id", account_main)
+        print(" ")
+        print("Создаем карзину")
+        print(" _______________________")
+        post_11 = requests.post(url=url_1+ url_shop, headers=register_headers_2)  # запрос по карзине
+        #print(post_11.json())
+        print("Статус код:", str(post_1.status_code))
+        print("корзина id = ", str(post_11.json()['data']['id']))  # берем id карзины
 
-            "login": admin_login,
-            "password": admin_password
+        # часть вторая
+        # из полученых джейсонн данных достаем id карзины и вставляем в запрос для добавления продукта. олл и id продукта в переменной выше
+        item = post_11.json()['data']['id']
+        body_1 = {
+            "product_id": product_id,
+            "quantity": quantity
         }
-        post_admin = requests.post(url=url_1+url_auf, headers=auf_hed_admin, json=body_admin)
-        print(post_admin.status_code)
-        assert 200 == post_admin.status_code
-        if post_admin.status_code == 200:
-            print("Токен админа получил.")
-        else:
-            print("чтото посло не так")
-        token_admin = post_admin.json()['data']['token']
-        register_admin = \
-            {
-                'Authorization': f'Bearer {token_admin}',
-                'Content-Type': 'application/json;charset=UTF-8',
-                'Accept': 'application/json, text/plain, /'
-            }
-        post_body = {
-            "credit_account_id": "3",
-            "debit_account_id": account_main,
-            "amount": "50000"
-        }
-        post_money = requests.post(url=url_1+url_money, headers=register_admin, json=post_body)
-        print(post_money.json())
 
-        if post_money.status_code == 202:
-            print("Статус код", post_money.status_code)
-            print("Баблишко на счету")
-            print("----------")
-        else:
-            print(post_money.json())
-            print(post_money.status_code, "чет натупилось")
+        url_add_item = url_1 + "/api/v1/shop/carts/{}/add-product"
+        updated_url = url_add_item.format(item)
+
+        post_2 = requests.post(url=updated_url, headers=register_headers_2, json=body_1)  # запрос на добовление продукта
+        print("Товар в корзину добавлен,Статус код:", str(post_2.status_code))
+        print(post_2.json())
+
+        body_2 = body_2 = {
+                "recipient_type": "me",
+                "recipient_phone": "+380636038451",
+                "do_not_call_back": "1",
+                "payment_type": "payment_system", #cash  payment_system
+                "delivery_method_id": "1",
+                "finance_account_id": account_main,
+                "phone": "+380636038450",
+                "recipient_phone": "+380636038450",
+                "recipient_name" : "Бонд",
+                "recipient_second_name": "Джеймс",
+                "police_agree": "1",
+                "newuser_agree": "1",
+                "first_name": "Бонд",
+                "last_name": "Бонд",
+                "patronymic": "wwww",
+                "redirect_url":"https://site.com",
+                "recipient_second_name":"Бонд",
+                "payment_system_id": 15
+
+        }
+
+        url_сheckout = url_1 + "/api/v1/shop/carts/{}/checkout"
+        updated_url_2 = url_сheckout.format(item)
+        post_3 = requests.post(url=updated_url_2, headers=register_headers_2, json=body_2)
+        print(post_3.json())
+        print("покупка успешна, статус код:", str(post_3.status_code))
+        print("Вот результат JSON", str(post_3.json()))  # если интересно что приходит в ответе то раскоментируй print/
+        print("--------------------------")
+
+
 
 
 # Использование класса UserGenerator для создания 10 пользователей
-generator = UserGenerator()
-generator.generate_users(20)
+a = Massager()
+a.massager()
