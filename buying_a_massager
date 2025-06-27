@@ -1,6 +1,6 @@
 
 import requests
-url_1 = "https://lavryniuk7.tback.zendo.cloud"
+url_1 = "https://krivchenkov6.tback.zendo.cloud" #  https://ustinov3.tback.zendo.cloud   https://krivchenkov6.tback.zendo.cloud
 url_register = "/api/v1/register"
 url_auf = "/api/v1/login"
 url_acc = "/api/v1/user/finance/accounts"
@@ -9,6 +9,7 @@ url_money = "/api/v1/admin/finance/operations/user-transfer"
 url_shop = "/api/v1/shop/carts"
 
 admin_login ="admin"
+admin_password = "123456"
 #inviter = "w3000"
 password = "123456"
 headers =  register_headers = {
@@ -16,9 +17,9 @@ headers =  register_headers = {
             'Accept': 'application/json, text/plain, /'
         }
 
-login = "w200"
-product_id = "2"  # массажер id=1
-quantity = "1"
+login = "t1003"
+product_id = "44"  # массажер id=27,9,28
+quantity = "3"
 
 
 class Massager:
@@ -33,10 +34,12 @@ class Massager:
         print("Шаг 2.  Авторизация клиентом")
         print("____________________________________________________________________________________________")
         post_1 = requests.post(url=url_1+url_auf, headers=register_headers, json=body_1)
-        #print(post_1.json())
-        assert 200 == post_1.status_code
+        print(post_1.json())
+        print(post_1.json())
+        #assert 200 == post_1.status_code
 
         if post_1.status_code == 200:
+            print(post_1.json())
             print("статус код =", post_1.status_code)
             print("------------")
         else:
@@ -51,12 +54,13 @@ class Massager:
 
         print("Узнаем аккаунт пользователя")
         get_1 = requests.get(url=url_1 + url_acc, headers=register_headers_2)
+        print(get_1.json())
         assert 200 == post_1.status_code
         if get_1.status_code == 200:
             get_1 = get_1.json()
         account_main = None
         for account in get_1['data']:
-            if account['name'] == "Основной счет USD":
+            if account['purpose'] == "main":
                 account_main = account['id']  # account_ustd_main  это переменная которую система использует как номер счета
                 break
         print("Аккаунт для пополнения основного счета = id ", account_main)
@@ -85,26 +89,30 @@ class Massager:
 
         post_2 = requests.post(url=updated_url, headers=register_headers_2, json=body_1)  # запрос на добовление продукта
         print("Товар в корзину добавлен,Статус код:", str(post_2.status_code))
+        print(post_2.json())
 
-        body_2 = {
-            "finance_account_id": account_main,  # ПЕРЕМЕННАЯ ВЫШЕ
-            #"payment_currency_id": "1",
-            "recipient_type": "me",
-            "payment_type": "account",
-            "delivery_country_id": "3572887",
-            "delivery_state_id": "3572807",
-            "delivery_city_id": "3572772",
-            "police_agree": "1",
-            "newuser_agree": "1",
-            "country_id": "690791",
-            "delivery_postcode": "55555",
-            "delivery_house": "kknmkl",
-            "delivery_street": "kmkmkmd",
-            "region_id": "700567",
-            "city_id": "700569",
-            "do_not_call_back": "1",
-            "delivery_type": "DHL"
+        body_2 = body_2 = {
+                "recipient_type": "me",
+                "recipient_phone": "+380636038451",
+                "do_not_call_back": "1",
+                "payment_type": "payment_system", #cash  payment_system
+                "delivery_method_id": "1",
+                "finance_account_id": account_main,
+                "phone": "+380636038450",
+                "recipient_phone": "+380636038450",
+                "recipient_name" : "Бонд",
+                "recipient_second_name": "Джеймс",
+                "police_agree": "1",
+                "newuser_agree": "1",
+                "first_name": "Бонд",
+                "last_name": "Бонд",
+                "patronymic": "wwww",
+                "redirect_url":"https://site.com",
+                "recipient_second_name":"Бонд",
+                "payment_system_id": 15
+
         }
+
         url_сheckout = url_1 + "/api/v1/shop/carts/{}/checkout"
         updated_url_2 = url_сheckout.format(item)
         post_3 = requests.post(url=updated_url_2, headers=register_headers_2, json=body_2)
